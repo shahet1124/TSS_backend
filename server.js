@@ -12,9 +12,14 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
+
+// CORS configuration
 app.use(cors({
-    origin: '*',  // Allow requests from any origin
-    credentials: true
+    origin: 'http://localhost:3000',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+    exposedHeaders: ['Set-Cookie']
 }));
 
 // Rate limiting
