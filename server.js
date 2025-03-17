@@ -21,12 +21,6 @@ const corsOptions = {
     allowedHeaders: ['Content-Type', 'Authorization']
 };
 app.use(cors(corsOptions));
-// Ensure cookies are set properly when issuing JWT
-res.cookie('token', token, {
-    httpOnly: true,
-    secure: true, // Must be true if using HTTPS
-    sameSite: 'None' // Required for cross-origin cookies
-});
 
 // Rate limiting (Disabled for debugging)
 // Uncomment this after testing
