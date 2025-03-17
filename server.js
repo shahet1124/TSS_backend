@@ -13,52 +13,36 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-// CORS Configuration
-const allowedOrigins = ['https://tss-frontend-sand.vercel.app'];
+// CORS - Allow everything (For Testing Only)
+app.use(cors()); // This allows all origins, methods, and headers
 
-app.use(cors({
-    origin: allowedOrigins,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    exposedHeaders: ['Set-Cookie']
-}));
 
-// Handle Preflight Requests
-app.options('*', (req, res) => {
-    res.header('Access-Control-Allow-Origin', allowedOrigins[0]);
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.sendStatus(204); // No Content
-});
-
-// Rate limiting
+// Rate limiting (optional, but can be disabled for debugging)
 const limiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
-    max: 10000, // Limit each IP to 10,000 requests per hour
+    max: 10000, // Limit each IP to 10000 requests per window
     message: 'Too many requests from this IP, please try again later.'
 });
 app.use(limiter);
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-.then(() => console.log('✅ Connected to MongoDB'))
-.catch((err) => {
-    console.error('❌ MongoDB connection error:', err.message);
-    process.exit(1); // Exit if DB connection fails
-});
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('✅ Connected to MongoDB'))
+    .catch((err) => console.error('❌ MongoDB connection error:', err));
 
 // Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/coupons', require('./routes/coupons'));
-app.use('/api/admin', require('./routes/admin'));
+try {
+    app.use('/api/auth', require('./routes/auth'));
+    app.use('/api/coupons', require('./routes/coupons'));
+    app.use('/api/admin', require('./routes/admin'));
+} catch (error) {
+    console.error('❌ Error loading routes:', error);
+}
 
-// Health Check Route
-app.get('/api/ping', (req, res) => {
-    res.json({ message: 'Server is running!' });
+// Error Handling Middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Internal Server Error' });
 });
 
 // Start Server
