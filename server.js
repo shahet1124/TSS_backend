@@ -13,17 +13,23 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-// CORS - Allow everything (For Testing Only)
-app.use(cors()); // This allows all origins, methods, and headers
+// CORS Configuration
+const corsOptions = {
+    origin: 'https://tss-frontend-sand.vercel.app', // Replace with your frontend URL
+    credentials: true, // Allow cookies and authentication headers
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+};
+app.use(cors(corsOptions));
 
-
-// Rate limiting (optional, but can be disabled for debugging)
-const limiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 10000, // Limit each IP to 10000 requests per window
-    message: 'Too many requests from this IP, please try again later.'
-});
-app.use(limiter);
+// Rate limiting (Disabled for debugging)
+// Uncomment this after testing
+// const limiter = rateLimit({
+//     windowMs: 60 * 60 * 1000, // 1 hour
+//     max: 10000, // Limit each IP to 10000 requests per window
+//     message: 'Too many requests from this IP, please try again later.'
+// });
+// app.use(limiter);
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -39,7 +45,7 @@ try {
     console.error('❌ Error loading routes:', error);
 }
 
-// Error Handling Middleware
+// Global Error Handling Middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ error: 'Internal Server Error' });
