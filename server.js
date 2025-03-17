@@ -22,10 +22,13 @@ app.use(cors({
     exposedHeaders: ['Set-Cookie']
 }));
 
+// Optionally handle pre-flight requests globally
+app.options('*', cors()); // Handle pre-flight requests for all routes
+
 // Rate limiting
 const limiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
-    max: 10000, // limit each IP to 5 requests per windowMs
+    max: 10000, // limit each IP to 10000 requests per windowMs (you can adjust this number if needed)
     message: 'Too many requests from this IP, please try again later.'
 });
 
@@ -45,4 +48,4 @@ app.use('/api/admin', require('./routes/admin'));
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
-}); 
+});
