@@ -13,7 +13,8 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-    origin: 'http://localhost:3000'
+    origin: '*',  // Allow requests from any origin
+    credentials: true
 }));
 
 // Rate limiting
