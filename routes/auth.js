@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs'); // Ensure you have bcrypt installed
 const Admin = require('../models/Admin');
 
 // Admin login
@@ -12,8 +13,9 @@ router.post('/login', async (req, res) => {
         if (!admin) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
-        console.log(admin.password, password);
-        const isMatch = admin.password === password;
+
+        // Compare hashed password
+        const isMatch = await bcrypt.compare(password, admin.password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
@@ -25,10 +27,12 @@ router.post('/login', async (req, res) => {
             { expiresIn: '1d' }
         );
 
-        // Set cookie
+        // Set cookie with proper attributes for cross-origin authentication
         res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            httpOnly: true,  // Prevents JavaScript access
+            secure: true,    // Ensures cookies are only sent over HTTPS
+            sameSite: 'None', // REQUIRED for cross-origin requests (Chrome)
+            path: '/',        // Ensures cookie is available on all routes
             maxAge: 24 * 60 * 60 * 1000 // 1 day
         });
 
@@ -37,6 +41,7 @@ router.post('/login', async (req, res) => {
             admin: { id: admin._id, email: admin.email }
         });
     } catch (err) {
+        console.error('Login Error:', err);
         res.status(500).json({ message: 'Server error' });
     }
 });
@@ -45,9 +50,12 @@ router.post('/login', async (req, res) => {
 router.post('/logout', (req, res) => {
     res.cookie('token', '', {
         httpOnly: true,
+        secure: true,
+        sameSite: 'None',
+        path: '/',
         expires: new Date(0)
     });
     res.json({ message: 'Logged out successfully' });
 });
 
-module.exports = router; 
+module.exports = router;
