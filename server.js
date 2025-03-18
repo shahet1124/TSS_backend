@@ -13,23 +13,26 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
+// Enable Trust Proxy for Cookie Handling on Render/Vercel
+app.set('trust proxy', 1);
+
 // CORS Configuration
 const corsOptions = {
-    origin: 'https://tss-frontend-sand.vercel.app', // Replace with your frontend URL
-    credentials: true, // Allow cookies and authentication headers
+    origin: 'https://tss-frontend-sand.vercel.app', 
+    credentials: true, 
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    exposedHeaders: ['Set-Cookie']
 };
 app.use(cors(corsOptions));
 
-// Rate limiting (Disabled for debugging)
-// Uncomment this after testing
-// const limiter = rateLimit({
-//     windowMs: 60 * 60 * 1000, // 1 hour
-//     max: 10000, // Limit each IP to 10000 requests per window
-//     message: 'Too many requests from this IP, please try again later.'
-// });
-// app.use(limiter);
+// Rate Limiting (Optional)
+const limiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 10000,
+    message: 'Too many requests, please try again later.'
+});
+app.use(limiter);
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
