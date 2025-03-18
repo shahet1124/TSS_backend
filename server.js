@@ -13,10 +13,10 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-// Enable Trust Proxy for Cookie Handling on Render/Vercel
+// Enable Trust Proxy for Render/Vercel to handle cookies correctly
 app.set('trust proxy', 1);
 
-// CORS Configuration
+// CORS Configuration (Allow Cookies & Authentication Headers)
 const corsOptions = {
     origin: 'https://tss-frontend-sand.vercel.app', 
     credentials: true, 
